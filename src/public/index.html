@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GamerRent | Aluguel de Periféricos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white font-sans">
+
+    <nav class="p-6 border-b border-purple-900 flex justify-between items-center shadow-md">
+        <h1 class="text-2xl font-bold text-purple-500 italic">🎮 GamerRent</h1>
+        <div class="text-right">
+            <p class="text-xs text-gray-500 uppercase tracking-widest">Projeto Acadêmico</p>
+            <p class="text-xs text-purple-400">Versão 1.0.0</p>
+        </div>
+    </nav>
+
+    <main class="container mx-auto p-8">
+        <header class="text-center mb-12">
+            <h2 class="text-4xl font-extrabold mb-3">Hardware de Elite por Assinatura</h2>
+            <p class="text-gray-400">Selecione o plano desejado.</p>
+        </header>
+
+        <div id="grid-produtos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            </div>
+    </main>
+
+    <script>
+        // Variável global para garantir apenas UMA escolha no site inteiro
+        let escolhaUnica = null;
+
+        async function carregarProdutos() {
+            try {
+                const response = await fetch('/api/produtos');
+                const produtos = await response.json();
+                const grid = document.getElementById('grid-produtos');
+                grid.innerHTML = '';
+
+                produtos.forEach(p => {
+                    grid.innerHTML += `
+                        <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-xl flex flex-col" id="card-${p.id}">
+                            <img src="${p.img}" class="w-full h-48 object-contain mb-6 rounded-xl shadow-md" alt="${p.nome}">
+                            
+                            <h3 class="text-xl font-bold mb-4 text-purple-100 h-14 flex items-center">${p.nome}</h3>
+                            
+                            <div class="space-y-3 mb-6">
+                                <button onclick="selecionarPlano(${p.id}, '${p.nome}', 'diario', ${p.precoDiaria})" 
+                                        id="btn-diario-${p.id}"
+                                        class="w-full flex justify-between p-3 bg-gray-900 rounded-lg border border-gray-700 hover:border-purple-500 transition-all text-left">
+                                    <span class="text-gray-400 text-sm">Plano Diário</span>
+                                    <span class="font-bold">R$ ${p.precoDiaria.toFixed(2)}</span>
+                                </button>
+
+                                <button onclick="selecionarPlano(${p.id}, '${p.nome}', 'mensal', ${p.precoMensal})" 
+                                        id="btn-mensal-${p.id}"
+                                        class="w-full flex justify-between p-3 bg-gray-900 rounded-lg border border-gray-700 hover:border-purple-500 transition-all text-left">
+                                    <span class="text-gray-400 text-sm">Plano Mensal</span>
+                                    <span class="font-bold">R$ ${p.precoMensal.toFixed(2)}</span>
+                                </button>
+                            </div>
+
+                            <button onclick="finalizarAluguel(${p.id})" 
+                                    class="mt-auto w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-xl font-bold shadow-lg transition-all transform active:scale-95">
+                                Reservar Agora
+                            </button>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error("Erro ao carregar:", error);
+            }
+        }
+
+        function selecionarPlano(produtoId, nomeProduto, tipo, valor) {
+            // 1. LIMPEZA TOTAL: Desmarca TODOS os botões do site
+            const todosOsBotoes = document.querySelectorAll('button[id^="btn-"]');
+            todosOsBotoes.forEach(btn => {
+                btn.classList.remove('border-purple-500', 'bg-purple-900/40', 'ring-2', 'ring-purple-500');
+                btn.classList.add('border-gray-700', 'bg-gray-900');
+            });
+
+            // 2. DESTAQUE: Marca apenas o botão clicado
+            const idBotao = tipo === 'diario' ? `btn-diario-${produtoId}` : `btn-mensal-${produtoId}`;
+            const btnSelecionado = document.getElementById(idBotao);
+            btnSelecionado.classList.remove('border-gray-700', 'bg-gray-900');
+            btnSelecionado.classList.add('border-purple-500', 'bg-purple-900/40', 'ring-2', 'ring-purple-500');
+
+            // 3. Salva a escolha na variável global
+            escolhaUnica = { id: produtoId, nome: nomeProduto, tipo: tipo, valor: valor };
+        }
+
+        function finalizarAluguel(cardId) {
+            // Verifica se tem algo selecionado E se a seleção é do card onde clicou
+            if (!escolhaUnica || escolhaUnica.id !== cardId) {
+                alert("⚠️ Por favor, selecione um plano para este produto antes de reservar!");
+                return;
+            }
+
+            alert(`🎮 RESERVA CONFIRMADA!\n\nEquipamento: ${escolhaUnica.nome}\nPlano: ${escolhaUnica.tipo.toUpperCase()}\nValor: R$ ${escolhaUnica.valor.toFixed(2)}`);
+        }
+
+        carregarProdutos();
+    </script>
+</body>
+</html>

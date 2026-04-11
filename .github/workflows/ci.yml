@@ -1,0 +1,22 @@
+name: CI GamerRent
+
+on: [push, pull_request]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest # Ele usa um computador Linux na nuvem
+
+    steps:
+      - name: Baixando o código do repositório
+        uses: actions/checkout@v3
+
+      - name: Instalando o Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18 
+
+      - name: Instalando as dependências (Express, Jest...)
+        run: npm install
+
+      - name: Executando os Testes Automatizados
+        run: npm test 

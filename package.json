@@ -1,0 +1,29 @@
+{
+  "name": "aluguel_gamer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest" 
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vbc1007/Aluguel_Gamer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vbc1007/Aluguel_Gamer/issues"
+  },
+  "homepage": "https://github.com/vbc1007/Aluguel_Gamer#readme",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "eslint": "^10.2.0",
+    "jest": "^30.3.0",
+    "supertest": "^7.2.2"
+  }
+}
