@@ -60,14 +60,52 @@ const produtos = [
 ];
 
 // 4. Rota para listar os produtos
-// Quando o site pedir "/api/produtos", envia a lista acima
 app.get('/api/produtos', (req, res) => 
     {
     res.json(produtos);
     });
 
-// 5. Ligar o Servidor
-app.listen(port, () => 
+// >>> ADICIONADO AQUI: Nova Rota para Cálculo de Frete consumindo a API Pública do ViaCEP
+app.get('/api/frete/:cep', async (req, res) => {
+    const { cep } = req.params;
+    const cepLimpo = cep.replace(/\D/g, ''); // Remove traços ou espaços
+
+    if (cepLimpo.length !== 8) {
+        return res.status(400).json({ erro: "CEP inválido. Deve conter exatamente 8 dígitos." });
+    }
+
+    try {
+        // Consome o serviço externo
+        const response = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+        const dados = await response.json();
+
+        if (dados.erro) {
+            return res.status(404).json({ erro: "CEP não encontrado." });
+        }
+
+        // Regra de Negócio: Se o CEP for do DF, frete reduzido a R$ 15.00, outros estados R$ 40.00
+        const valorFrete = dados.uf === 'DF' ? 15.00 : 40.00;
+
+        res.json({
+            logradouro: dados.logradouro || "Não mapeado",
+            bairro: dados.bairro || "Não mapeado",
+            localidade: dados.localidade,
+            uf: dados.uf,
+            valorFrete: valorFrete
+        });
+    } catch (error) {
+        console.error("Erro na API externa:", error);
+        res.status(500).json({ erro: "Falha ao conectar com o serviço de frete externo." });
+    }
+});
+
+// 5. Ligar o Servidor 
+if (require.main === module) {
+    app.listen(port, () => 
     {
-    console.log(`🚀 Servidor rodando em http://localhost:${port}`);
+        console.log(`🚀 Servidor rodando em http://localhost:${port}`);
     });
+}
+
+// Exportação necessária para o passo de Testes de Integração
+module.exports = app;

@@ -22,13 +22,27 @@
             <p class="text-gray-400">Selecione o plano desejado.</p>
         </header>
 
-        <div id="grid-produtos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="max-w-md mx-auto bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-xl mb-12">
+            <h3 class="text-lg font-bold mb-3 text-purple-400">🚚 Calcular Frete de Entrega</h3>
+            <div class="flex gap-3">
+                <input type="text" id="input-cep" placeholder="Digite seu CEP (8 dígitos)" maxlength="8"
+                       class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition-all">
+                <button onclick="calcularFrete()" class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl font-bold transition-all transform active:scale-95">
+                    Calcular
+                </button>
             </div>
+            <div id="resultado-frete" class="hidden mt-4 p-4 bg-gray-900 rounded-lg border border-purple-500/30 text-sm"></div>
+        </div>
+
+        <div id="grid-produtos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        </div>
     </main>
 
     <script>
         // Variável global para garantir apenas UMA escolha no site inteiro
         let escolhaUnica = null;
+        // >>> ADICIONADO: Armazena o valor do frete retornado pela API externa <<<
+        let freteCalculado = null;
 
         async function carregarProdutos() {
             try {
@@ -73,31 +87,67 @@
         }
 
         function selecionarPlano(produtoId, nomeProduto, tipo, valor) {
-            // 1. LIMPEZA TOTAL: Desmarca TODOS os botões do site
             const todosOsBotoes = document.querySelectorAll('button[id^="btn-"]');
             todosOsBotoes.forEach(btn => {
                 btn.classList.remove('border-purple-500', 'bg-purple-900/40', 'ring-2', 'ring-purple-500');
                 btn.classList.add('border-gray-700', 'bg-gray-900');
             });
 
-            // 2. DESTAQUE: Marca apenas o botão clicado
             const idBotao = tipo === 'diario' ? `btn-diario-${produtoId}` : `btn-mensal-${produtoId}`;
             const btnSelecionado = document.getElementById(idBotao);
             btnSelecionado.classList.remove('border-gray-700', 'bg-gray-900');
             btnSelecionado.classList.add('border-purple-500', 'bg-purple-900/40', 'ring-2', 'ring-purple-500');
 
-            // 3. Salva a escolha na variável global
             escolhaUnica = { id: produtoId, nome: nomeProduto, tipo: tipo, valor: valor };
         }
 
+        // >>> ADICIONADO: Função que busca o Frete na API através do seu Backend <<<
+        async function calcularFrete() {
+            const cep = document.getElementById('input-cep').value;
+            const resultadoDiv = document.getElementById('resultado-frete');
+
+            if (!cep || cep.trim().length !== 8) {
+                alert("⚠️ Por favor, digite um CEP válido com 8 números!");
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/frete/${cep}`);
+                const dados = await response.json();
+
+                if (!response.ok) {
+                    resultadoDiv.innerHTML = `<p class="text-red-400 font-bold">❌ ${dados.erro}</p>`;
+                    resultadoDiv.classList.remove('hidden');
+                    freteCalculado = null;
+                    return;
+                }
+
+                resultadoDiv.innerHTML = `
+                    <p class="text-gray-300"><span class="font-bold text-purple-400">Região:</span> ${dados.logradouro}, ${dados.bairro} - ${dados.localidade}/${dados.uf}</p>
+                    <p class="text-emerald-400 font-bold mt-1 text-base">🚚 Custo de Entrega: R$ ${dados.valorFrete.toFixed(2)}</p>
+                `;
+                resultadoDiv.classList.remove('hidden');
+                
+                freteCalculado = dados.valorFrete;
+            } catch (error) {
+                console.error("Erro ao calcular frete:", error);
+                resultadoDiv.innerHTML = `<p class="text-red-400">❌ Falha ao conectar com o servidor.</p>`;
+                resultadoDiv.classList.remove('hidden');
+                freteCalculado = null;
+            }
+        }
+
         function finalizarAluguel(cardId) {
-            // Verifica se tem algo selecionado E se a seleção é do card onde clicou
             if (!escolhaUnica || escolhaUnica.id !== cardId) {
                 alert("⚠️ Por favor, selecione um plano para este produto antes de reservar!");
                 return;
             }
 
-            alert(`🎮 RESERVA CONFIRMADA!\n\nEquipamento: ${escolhaUnica.nome}\nPlano: ${escolhaUnica.tipo.toUpperCase()}\nValor: R$ ${escolhaUnica.valor.toFixed(2)}`);
+            //  Soma o frete ao total se o usuário tiver calculado o CEP <<<
+            const valorTotal = freteCalculado ? (escolhaUnica.valor + freteCalculado) : escolhaUnica.valor;
+            const textoFrete = freteCalculado ? `\nFrete: R$ ${freteCalculado.toFixed(2)}\nTotal: R$ ${valorTotal.toFixed(2)}` : `\n(Frete não calculado)`;
+
+            alert(`🎮 RESERVA CONFIRMADA!\n\nEquipamento: ${escolhaUnica.nome}\nPlano: ${escolhaUnica.tipo.toUpperCase()}\nPreço Base: R$ ${escolhaUnica.valor.toFixed(2)}${textoFrete}`);
         }
 
         carregarProdutos();
