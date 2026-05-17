@@ -11,26 +11,23 @@ O custo de hardware gamer no Brasil é muito alto. O **GamerRent** facilita o ac
 - **GitHub Actions**: Integração Contínua (CI).
 
 ### 🚀 Como Executar o Projeto Localmente
+Para clonar e rodar esta aplicação na sua máquina, você precisará do Git e do Node.js instalados.
 
-Para clonar e rodar esta aplicação na sua máquina, você precisará do [Git](https://git-scm.com) e do [Node.js](https://nodejs.org/) instalados.
+1. Clone o repositório:
+   git clone https://github.com/vbc1007/Aluguel_Gamer.git
+   cd Aluguel_Gamer
 
-Instale todas as dependências necessárias:
-npm install
+2. Instale as dependências necessárias:
+   npm install
 
-Inicie o servidor local do Express:
-npm start
+3. Inicie o servidor local do Express:
+   npm start
 
-Abra o navegador e acesse: http://localhost:3000
+4. Acesse a aplicação no seu navegador:
+  Abra o navegador e acesse: http://localhost:3000
+
+Executando os Testes Automatizados
+O projeto conta com uma suíte de testes robusta utilizando Jest (testes unitários) e Supertest (testes de integração com a API do ViaCEP).
 
 Para rodar todos os testes localmente e verificar os critérios de aceitação, execute:
-
-
-**1. Clone o repositório:**
-```bash
-git clone [https://github.com/vbc1007/Aluguel_Gamer.git](https://github.com/vbc1007/Aluguel_Gamer.git)
-cd Aluguel_Gamer
-### Testes
-Para rodar os testes: `npm test`
-
----
-**Autor:** Vinícius Carneiro
+Autor: Vinícius Carneiro
