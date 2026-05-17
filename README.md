@@ -30,4 +30,5 @@ Executando os Testes Automatizados
 O projeto conta com uma suíte de testes robusta utilizando Jest (testes unitários) e Supertest (testes de integração com a API do ViaCEP).
 
 Para rodar todos os testes localmente e verificar os critérios de aceitação, execute:
+
 Autor: Vinícius Carneiro
